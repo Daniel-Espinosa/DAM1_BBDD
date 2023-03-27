@@ -44,5 +44,14 @@ insert into Jugadores (codigo,nombre,Procedencia,Altura,Peso,Posicion,Nombre_equ
 /*5.- Cambia la procedencia de todos los jugadores que hayan metido más de 30 puntos
 por partido en alguna temporada. La procedencia de todos ellos debe ser Buque.*/
 
+-- se puede realizar con un insert, pero tiene mas sentido hacerlo con un update
+
+-- select para saber el codigo del jugador que tiene mas 30 puntos por partido lo saco directamente de estadisticas.
+-- utilizo distinct por si algun jugador se repite.
+select distinct jugador from estadisticas where Puntos_por_partido> 30;
+
+insert into jugadores(codigo) select distinct jugador from estadisticas where Puntos_por_partido> 30 
+on duplicate key update procedencia = 'Buque';
+
 /* Aunque esto no es parte de los Inserts se realizaria con UPDATE*/
 update jugadores inner join estadisticas on codigo = jugador set procedencia = "Buque" where Puntos_por_partido >30;

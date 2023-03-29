@@ -7,22 +7,38 @@ Pomaluengo. 972 hab.
 Socobio. 259 hab.
 Villabáñez. 681 hab */
 
-select max(numero) from localidades where municipio = 20;
-select if((select max(numero) from localidades where municipio = 20) is null,1,(select max(numero)+1 from localidades where municipio = 20));
-
-start transaction;
-insert into localidades (municipio,numero,nombre_loc,habitantes) values
-(20,(select if((select max(numero) from localidades where municipio = 20) is null,1,(select max(numero)+1 from localidades where municipio = 20))),'La Cueva',740),
-(20,(select if((select max(numero) from localidades where municipio = 20) is null,1,(select max(numero)+1 from localidades where municipio = 20))),'Pomaluengo',972),
-(20,(select if((select max(numero) from localidades where municipio = 20) is null,1,(select max(numero)+1 from localidades where municipio = 20))),'Socobio',259),
-(20,(select if((select max(numero) from localidades where municipio = 20) is null,1,(select max(numero)+1 from localidades where municipio = 20))),'Villabáñez',681);
-commit;
-
 insert into localidades (municipio,numero,nombre_loc,habitantes) values
 (20,1,'La Cueva',740),
 (20,2,'Pomaluengo',972),
 (20,3,'Socobio',259),
 (20,4,'Villabáñez',681);
+
+/*
+Multiples intentos de que se auto genere el NUMERO de para el municipio
+No me lo tengas en cuenta ;)
+
+select max(numero) from localidades where municipio = 20;
+select 20 as municipio, if((select max(numero) from localidades where municipio = 20) is null,1,(select max(numero)+1 from localidades where municipio = 20)) as numero , 'La Cueva' as nombre_loc , 740 as habitantes;
+
+-- con esto determinamos numero de municipio
+set @numeromunicipio =  if((select max(numero) from localidades where municipio = 20) is null,0,(select max(numero) from localidades where municipio = 20)); 
+-- muestra el numero de municipio comprobacion
+select @numeromunicipio;
+
+set @numeromunicipio = @numeromunicipio+1;
+
+select 20 as municipio, @numeromunicipio  = if((select max(numero) from localidades where municipio = 20) is null,1,(select max(numero)+1 from localidades where municipio = 20)) as numero , 'La Cueva' as nombre_loc , 740 as habitantes;
+
+start transaction;
+insert into localidades values
+(20,select set @numeromunicipio = @numeromunicipio+1,'La Cueva',740),
+(20,@numeromunicipio = @numeromunicipio+1,'Pomaluengo',972),
+(20,@numeromunicipio = @numeromunicipio+1,'Socobio',259),
+(20,@numeromunicipio = @numeromunicipio+1,'Villabáñez',681);
+
+rollback;
+commit;
+*/
 
 /*Comprueba ahora con SELECT cuales son las localidades del municipio de nombre Castañeda*/
 select localidades.* from localidades inner join municipios on id = municipio where nombre = 'Castañeda';
@@ -84,6 +100,5 @@ set sql_safe_updates = 0;
 delete from personas where a_nac in (1962,1982,1992,1993);
 -- con esto permite borrar las personas que no se ven afectadas por la FK
 delete ignore from personas where a_nac in (1962,1982,1992,1993);
-
 rollback;
 set sql_safe_updates = 1

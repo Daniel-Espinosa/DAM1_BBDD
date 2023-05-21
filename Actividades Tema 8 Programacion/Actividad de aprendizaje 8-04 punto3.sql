@@ -7,6 +7,7 @@ declare nomMuni varchar(70);
 declare maxMuni int;
 declare nomProvi varchar(30);
 
+if (select num from personas where num = idpersona) != null then
 -- nombre de calle aleatoria (direccion)
 set randCalle = (select round((rand()*count(*))+1)  from calles);
 set newDirec = (select concat(nomcalle, ", " ,round((rand()*60)+1)) from calles where idcalle = randCalle);
@@ -23,5 +24,9 @@ update personas set direccion = newDirec , localidad = nomMuni , provincia = nom
 
 -- muestra por pantalla los datos
 select * from personas where num = idpersona;
+
+else select ('¡La persona no esiste!') as Fail;
+
+end if;
 
 END

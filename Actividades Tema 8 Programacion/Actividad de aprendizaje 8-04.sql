@@ -39,7 +39,7 @@ end if;
 END
 */
 
-call asigna_fecha_nac(2,19830409,curdate());
+call asigna_fecha_nac(4,19830409,curdate());
 
 /*
 2.- Realiza un procedimiento asigna_direccion que modifica la dirección y localidad una persona de la tabla personas con una dirección y localidad generadas aleatoriamente.
@@ -49,18 +49,13 @@ call asigna_fecha_nac(2,19830409,curdate());
 ● En la columna provincia carga el nombre de la provincia del municipio obtenido anteriormente.
 */
 
-set @randCalle = (select round((rand()*count(*))+1)  from calles);
-set @nomCalle = (select concat(nomcalle , ', ' , round((rand()*60)+1)) from calles where idcalle = @randCalle);
-set @nomCalle = concat((select nomcalle from calles where idcalle = @randCalle), ', ' , round((rand()*60)+1));
-select @nomCalle, @randCalle;
-
-call asigna_direccion(1);
+call asigna_direccion(3);
 
 /*
 CREATE DEFINER=`root`@`localhost` PROCEDURE `asigna_direccion`(in idpersona INT)
 BEGIN
 
-declare nomCalle varchar(50);
+declare newDirec varchar(200);
 declare randCalle int;
 declare nomMuni varchar(70);
 declare maxMuni int;
@@ -68,10 +63,7 @@ declare nomProvi varchar(30);
 
 -- nombre de calle aleatoria (direccion)
 set randCalle = (select round((rand()*count(*))+1)  from calles);
--- set nomCalle = (select concat(nomcalle, ", " ,round((rand()*60)+1)) from calles where idcalle = randCalle);
-set nomCalle = (select nomcalle from calles where idcalle = randCalle);
-select nomcalle from calles where idcalle = randCalle;
-select nomCalle, randCalle;
+set newDirec = (select concat(nomcalle, ", " ,round((rand()*60)+1)) from calles where idcalle = randCalle);
 
 -- nombre de municipio aleatorio (localidad)
 set maxMuni = (select max(hasta) from municipios);
@@ -81,10 +73,117 @@ set nomMuni = (select nommunicipio from municipios where hasta >= round(rand()*m
 set nomProvi = (select provincia from municipios where nommunicipio = nomMuni);
 
 -- se realizas el update de los datos
-update personas set direccion = nomCalle , localidad = nomMuni , provincia = nomProvi  where num = idpersona;
+update personas set direccion = newDirec , localidad = nomMuni , provincia = nomProvi  where num = idpersona;
 
 -- muestra por pantalla los datos
 select * from personas where num = idpersona;
 
 END
 */
+
+/*
+3.- Modifica el procedimiento anterior para que:
+Si no existe el número de persona, escribirá un mensaje en pantalla indicando tal
+circunstancia.
+*/
+
+call asigna_direccion(500);
+
+/*
+CREATE DEFINER=`root`@`localhost` PROCEDURE `asigna_direccion`(in idpersona INT)
+BEGIN
+
+declare newDirec varchar(200);
+declare randCalle int;
+declare nomMuni varchar(70);
+declare maxMuni int;
+declare nomProvi varchar(30);
+
+if (select num from personas where num = idpersona) != false then
+-- nombre de calle aleatoria (direccion)
+set randCalle = (select round((rand()*count(*))+1)  from calles);
+set newDirec = (select concat(nomcalle, ", " ,round((rand()*60)+1)) from calles where idcalle = randCalle);
+
+-- nombre de municipio aleatorio (localidad)
+set maxMuni = (select max(hasta) from municipios);
+set nomMuni = (select nommunicipio from municipios where hasta >= round(rand()*maxMuni) limit 1); 
+
+-- nombre de provincia
+set nomProvi = (select provincia from municipios where nommunicipio = nomMuni);
+
+-- se realizas el update de los datos
+update personas set direccion = newDirec , localidad = nomMuni , provincia = nomProvi  where num = idpersona;
+
+-- muestra por pantalla los datos
+select * from personas where num = idpersona;
+
+else select ('¡La persona no esiste!') as Fail;
+
+end if;
+
+END
+*/
+
+/*
+4.- Modifica el procedimiento anterior para que no escriba el mensaje de error en
+pantalla, sino que devuelva en una variable booleana si se pudo realizar la
+modificación por existir el número de persona o si no se realizó por no existir.
+*/
+
+call asigna_direccion(500,@esiste);
+select @esiste;
+
+/*
+CREATE DEFINER=`root`@`localhost` PROCEDURE `asigna_direccion`(in idpersona INT, out esiste boolean)
+BEGIN
+
+declare newDirec varchar(200);
+declare randCalle int;
+declare nomMuni varchar(70);
+declare maxMuni int;
+declare nomProvi varchar(30);
+
+if (select num from personas where num = idpersona) != false then
+-- nombre de calle aleatoria (direccion)
+set randCalle = (select round((rand()*count(*))+1)  from calles);
+set newDirec = (select concat(nomcalle, ", " ,round((rand()*60)+1)) from calles where idcalle = randCalle);
+
+-- nombre de municipio aleatorio (localidad)
+set maxMuni = (select max(hasta) from municipios);
+set nomMuni = (select nommunicipio from municipios where hasta >= round(rand()*maxMuni) limit 1); 
+
+-- nombre de provincia
+set nomProvi = (select provincia from municipios where nommunicipio = nomMuni);
+
+-- se realizas el update de los datos
+update personas set direccion = newDirec , localidad = nomMuni , provincia = nomProvi  where num = idpersona;
+
+-- muestra por pantalla los datos
+select * from personas where num = idpersona;
+
+set esiste = true;
+
+else set esiste = false;
+
+end if;
+
+END
+*/
+
+/*
+5.- Crea una cuenta de usuario para acceder al servidor MySQL con el identificador
+invitado desde otro equipo de la red (si trabajas con máquina virtual, desde la real).
+Establece que con esa cuenta de usuario se puedan realizar consultas (privilegio
+SELECT) y ejecutar procedimientos (privilegio EXECUTE) sobre la base de datos
+datosorigen.
+Actualiza privilegios:
+FLUSH PRIVILEGES;
+*/
+
+
+/*
+6.- Comprueba si el usuario creado puede acceder desde el equipo para el que has
+creado la cuenta, si puede hacer SELECT sobre las tablas de datosorigen y si puede
+ejecutar los procedimientos que se han creado en esta actividad.
+*/
+

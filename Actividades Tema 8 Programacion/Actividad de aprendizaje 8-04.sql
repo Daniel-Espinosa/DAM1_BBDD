@@ -180,6 +180,9 @@ Actualiza privilegios:
 FLUSH PRIVILEGES;
 */
 
+CREATE USER 'invitado'@'%' IDENTIFIED BY '1234';
+GRANT SELECT, execute on datosorigen.* to 'invitado'@'%';
+FLUSH PRIVILEGES;
 
 /*
 6.- Comprueba si el usuario creado puede acceder desde el equipo para el que has
@@ -187,3 +190,5 @@ creado la cuenta, si puede hacer SELECT sobre las tablas de datosorigen y si pue
 ejecutar los procedimientos que se han creado en esta actividad.
 */
 
+-- albano puede realizar la conexion!
+-- albano puede ejecutar el procedimiento!
